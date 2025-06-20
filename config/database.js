@@ -37,9 +37,9 @@ class Database {
       // Créer la table favorites
       await this.createFavoritesTable();
       
-      console.log('✅ Toutes les tables initialisées');
+      console.log(' Toutes les tables initialisées');
     } catch (error) {
-      console.error('❌ Erreur initialisation tables:', error);
+      console.error(' Erreur initialisation tables:', error);
       throw error;
     }
   }
