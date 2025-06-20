@@ -1,7 +1,7 @@
 {
   "name": "spota-backend",
   "version": "1.0.0",
-  "description": "Backend API pour l'application Spota ",
+  "description": "Backend API Spota ",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
