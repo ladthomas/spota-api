@@ -19,7 +19,7 @@ class EventsController {
         }
       });
 
-      console.log('🔍 Récupération événements avec filtres:', filters);
+      console.log(' Récupération événements avec filtres:', filters);
 
       const events = await Event.findAll(filters);
 
@@ -52,7 +52,7 @@ class EventsController {
         });
       }
 
-      console.log('🔍 Recherche événement ID:', id);
+      console.log(' Recherche événement ID:', id);
 
       const event = await Event.findById(parseInt(id));
 
@@ -70,7 +70,7 @@ class EventsController {
       });
 
     } catch (error) {
-      console.error('❌ Erreur récupération événement:', error);
+      console.error(' Erreur récupération événement:', error);
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la récupération de l\'événement',
@@ -227,7 +227,7 @@ class EventsController {
         });
       }
 
-      console.log('🗑️ Suppression événement ID:', id, 'par utilisateur:', user_id);
+      console.log(' Suppression événement ID:', id, 'par utilisateur:', user_id);
 
       // Supprimer avec vérification de propriété
       const result = await Event.delete(parseInt(id), user_id);
@@ -268,7 +268,7 @@ class EventsController {
         });
       }
 
-      console.log('👤 Récupération événements utilisateur:', user_id);
+      console.log(' Récupération événements utilisateur:', user_id);
 
       const events = await Event.findByUserId(user_id);
 
@@ -292,7 +292,7 @@ class EventsController {
   // Récupérer les catégories disponibles
   static async getCategories(req, res) {
     try {
-      console.log('📂 Récupération catégories');
+      console.log(' Récupération catégories');
 
       const categories = await Event.getCategories();
 
@@ -357,7 +357,7 @@ class EventsController {
         limit: limit ? parseInt(limit) : 20
       };
 
-      console.log('🔍 Recherche événements:', filters);
+      console.log('Recherche événements:', filters);
 
       const events = await Event.findAll(filters);
 
@@ -370,7 +370,7 @@ class EventsController {
       });
 
     } catch (error) {
-      console.error('❌ Erreur recherche événements:', error);
+      console.error(' Erreur recherche événements:', error);
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la recherche',
