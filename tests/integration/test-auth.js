@@ -4,18 +4,18 @@ const testAuthAPI = async () => {
   const fetch = (await import('node-fetch')).default;
   const API_BASE = 'http://localhost:3001/api';
 
-  console.log(' TEST DE L\'API D\'AUTHENTIFICATION SPOTA\n');
+  console.log(' TEST DE L\'API');
 
   try {
     // Test 1: Vérifier que le serveur fonctionne
-    console.log(' Test 1: Vérification du serveur...');
+    console.log(' Vérification du serveur');
     const healthResponse = await fetch('http://localhost:3001/health');
     const healthData = await healthResponse.json();
     console.log('Serveur:', healthData.message);
     console.log();
 
     // Test 2: Inscription
-    console.log('Test 2: Inscription d\'un nouvel utilisateur...');
+    console.log('Inscription d\'un nouvel utilisateur');
     const registerData = {
       name: 'Thomas Test',
       email: 'thomas.test@spota.fr',
@@ -41,7 +41,7 @@ const testAuthAPI = async () => {
     console.log();
 
     // Test 3: Connexion
-    console.log(' Test 3: Connexion avec l\'utilisateur créé...');
+    console.log(' Connexion avec l\'utilisateur créé');
     const loginData = {
       email: 'thomas.test@spota.fr',
       password: 'motdepasse123'
@@ -62,7 +62,7 @@ const testAuthAPI = async () => {
       
       // Test 4: Récupération du profil avec le token
       console.log();
-      console.log(' Test 4: Récupération du profil utilisateur...');
+      console.log('Récupération du profil utilisateur');
       
       const profileResponse = await fetch(`${API_BASE}/auth/me`, {
         headers: { 
@@ -93,7 +93,7 @@ const testAuthAPI = async () => {
 
   } catch (error) {
     console.error(' Erreur durant les tests:', error.message);
-    console.log('\n Assurez-vous que le serveur backend est démarré avec: npm run dev');
+    console.log('');
   }
 };
 
