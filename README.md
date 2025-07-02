@@ -199,21 +199,3 @@ curl -X POST http://localhost:5001/api/auth/login \
 
 ---
 
-## 📖 Contribuer
-
-1. **Fork** le projet
-2. Créez votre **branche feature** (`git checkout -b feature/AmazingFeature`)
-3. **Committez** vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une **Pull Request**
-
----
-
-<div align="center">
-
-**Développé avec ❤️ pour Spota**
-
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
-
-</div>
-
