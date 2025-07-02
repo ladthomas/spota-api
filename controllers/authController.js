@@ -7,7 +7,9 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-
+// @desc    Inscription d'un nouvel utilisateur
+// @route   POST /api/auth/register
+// @access  Public
 const register = async (req, res) => {
   try {
     const { email, password, confirmPassword, name } = req.body;
@@ -81,7 +83,9 @@ const register = async (req, res) => {
   }
 };
 
-
+// @desc    Connexion utilisateur
+// @route   POST /api/auth/login
+// @access  Public
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -134,7 +138,9 @@ const login = async (req, res) => {
   }
 };
 
-
+// @desc    Obtenir le profil utilisateur actuel
+// @route   GET /api/auth/me
+// @access  Private (nécessite authentification)
 const getMe = async (req, res) => {
   try {
     res.status(200).json({
@@ -150,7 +156,9 @@ const getMe = async (req, res) => {
   }
 };
 
-
+// @desc    Mettre à jour le profil utilisateur
+// @route   PUT /api/auth/update-profile
+// @access  Private (nécessite authentification)
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -200,7 +208,7 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    console.log(' Profil mis à jour:', updatedUser.email);
+          console.log('Profil mis à jour:', updatedUser.email);
 
     res.status(200).json({
       success: true,
@@ -209,7 +217,7 @@ const updateProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(' Erreur mise à jour profil:', error);
+    console.error('🔴 Erreur mise à jour profil:', error);
     
     if (error.message === 'Un compte avec cet email existe déjà') {
       return res.status(400).json({
@@ -225,13 +233,15 @@ const updateProfile = async (req, res) => {
   }
 };
 
-
+// @desc    Supprimer le compte utilisateur
+// @route   DELETE /api/auth/delete-account
+// @access  Private (nécessite authentification)
 const deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id;
     const userEmail = req.user.email;
 
-    console.log(' Tentative de suppression du compte:', userEmail);
+    console.log('Tentative de suppression du compte:', userEmail);
 
     // Supprimer l'utilisateur de la base de données
     const isDeleted = await User.delete(userId);
@@ -243,7 +253,7 @@ const deleteAccount = async (req, res) => {
       });
     }
 
-    console.log('✅ Compte supprimé avec succès:', userEmail);
+          console.log('Compte supprimé avec succès:', userEmail);
 
     res.status(200).json({
       success: true,

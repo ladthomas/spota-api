@@ -15,7 +15,7 @@ class FavoritesController {
 
       console.log(' Récupération favoris utilisateur:', user_id);
 
-      const favorites = await Favorite.findByUserId(user_id);
+      const favorites = await Favorite.getFavoriteIds(user_id);
 
       res.json({
         success: true,
@@ -47,7 +47,7 @@ class FavoritesController {
         });
       }
 
-      if (!event_id || isNaN(event_id)) {
+      if (!event_id || typeof event_id !== 'string' || event_id.trim() === '') {
         return res.status(400).json({
           success: false,
           message: 'ID événement invalide'
@@ -56,7 +56,7 @@ class FavoritesController {
 
       console.log(' Ajout favori:', { user_id, event_id });
 
-      const favorite = await Favorite.add(user_id, parseInt(event_id));
+      const favorite = await Favorite.add(user_id, event_id.trim());
 
       res.status(201).json({
         success: true,
@@ -95,7 +95,7 @@ class FavoritesController {
         });
       }
 
-      if (!event_id || isNaN(event_id)) {
+      if (!event_id || typeof event_id !== 'string' || event_id.trim() === '') {
         return res.status(400).json({
           success: false,
           message: 'ID événement invalide'
@@ -104,7 +104,7 @@ class FavoritesController {
 
       console.log(' Suppression favori:', { user_id, event_id });
 
-      await Favorite.remove(user_id, parseInt(event_id));
+      await Favorite.remove(user_id, event_id.trim());
 
       res.json({
         success: true,
@@ -142,19 +142,19 @@ class FavoritesController {
         });
       }
 
-      if (!event_id || isNaN(event_id)) {
+      if (!event_id || typeof event_id !== 'string' || event_id.trim() === '') {
         return res.status(400).json({
           success: false,
           message: 'ID événement invalide'
         });
       }
 
-      const isFavorite = await Favorite.isFavorite(user_id, parseInt(event_id));
+      const isFavorite = await Favorite.isFavorite(user_id, event_id.trim());
 
       res.json({
         success: true,
         isFavorite,
-        event_id: parseInt(event_id)
+        event_id: event_id.trim()
       });
 
     } catch (error) {
@@ -189,7 +189,7 @@ class FavoritesController {
       });
 
     } catch (error) {
-      console.error(' Erreur récupération IDs favoris:', error);
+      console.error('Erreur récupération IDs favoris:', error);
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la récupération des IDs favoris',
@@ -218,7 +218,7 @@ class FavoritesController {
       });
 
     } catch (error) {
-      console.error(' Erreur comptage favoris:', error);
+      console.error('Erreur comptage favoris:', error);
       res.status(500).json({
         success: false,
         message: 'Erreur lors du comptage des favoris',
@@ -239,7 +239,7 @@ class FavoritesController {
         });
       }
 
-      console.log(' Suppression tous favoris utilisateur:', user_id);
+      console.log('Suppression tous favoris utilisateur:', user_id);
 
       const result = await Favorite.removeAllByUserId(user_id);
 
@@ -250,7 +250,7 @@ class FavoritesController {
       });
 
     } catch (error) {
-      console.error(' Erreur suppression tous favoris:', error);
+      console.error('Erreur suppression tous favoris:', error);
       res.status(500).json({
         success: false,
         message: 'Erreur lors de la suppression des favoris',
