@@ -4,150 +4,67 @@ const path = require('path');
 class Database {
   constructor() {
     this.db = null;
+    this.isInitialized = false;
   }
 
-  // Connexion à la base de données
-  connect() {
-    return new Promise((resolve, reject) => {
-      const dbPath = process.env.DB_PATH || './database.sqlite';
-      
-      this.db = new sqlite3.Database(dbPath, (err) => {
-        if (err) {
-          console.error(' Erreur connexion SQLite:', err.message);
-          reject(err);
-        } else {
-          console.log(' Connexion SQLite établie');
-          this.initTables()
-            .then(() => resolve())
-            .catch(reject);
-        }
-      });
-    });
-  }
-
-  // Initialiser les tables
-  async initTables() {
-    try {
-      // Créer la table users
-      await this.createUsersTable();
-      
-      // Créer la table events
-      await this.createEventsTable();
-      
-      // Créer la table favorites
-      await this.createFavoritesTable();
-      
-      console.log(' Toutes les tables initialisées');
-    } catch (error) {
-      console.error(' Erreur initialisation tables:', error);
-      throw error;
+  // Initialiser la base de données
+  async init() {
+    if (this.isInitialized) {
+      console.log('Base de données déjà initialisée');
+      return;
     }
-  }
 
-  // Créer la table users
-  createUsersTable() {
+    const dbPath = path.join(__dirname, '..', 'database.sqlite');
+    console.log('Connexion à la base de données:', dbPath);
+
     return new Promise((resolve, reject) => {
-      const createUsersTable = `
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          email TEXT UNIQUE NOT NULL,
-          password TEXT NOT NULL,
-          name TEXT NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `;
-
-      this.db.run(createUsersTable, (err) => {
+      this.db = new sqlite3.Database(dbPath, async (err) => {
         if (err) {
-          console.error(' Erreur création table users:', err.message);
+          console.error('Erreur connexion base de données:', err.message);
           reject(err);
-        } else {
-          console.log(' Table users créée/vérifiée');
+          return;
+        }
+        
+        console.log(' Connexion base de données établie');
+        
+        try {
+          //  Utiliser le système de migrations au lieu de createTables()
+          const migrationManager = require('./migrations');
+          await migrationManager.runPendingMigrations();
+          this.isInitialized = true;
           resolve();
+        } catch (error) {
+          console.error('Erreur exécution migrations:', error);
+          reject(error);
         }
       });
     });
   }
 
-  // Créer la table events
-  createEventsTable() {
-    return new Promise((resolve, reject) => {
-      const createEventsTable = `
-        CREATE TABLE IF NOT EXISTS events (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          titre TEXT NOT NULL,
-          lieu TEXT NOT NULL,
-          date TEXT NOT NULL,
-          prix TEXT NOT NULL,
-          categorie TEXT DEFAULT 'Autre',
-          latitude REAL,
-          longitude REAL,
-          description TEXT,
-          image TEXT,
-          user_id INTEGER,
-          source TEXT DEFAULT 'user',
-          external_id TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-      `;
-
-      this.db.run(createEventsTable, (err) => {
-        if (err) {
-          console.error(' Erreur création table events:', err.message);
-          reject(err);
-        } else {
-          console.log(' Table events créée/vérifiée');
-          resolve();
-        }
-      });
-    });
-  }
-
-  // Créer la table favorites
-  createFavoritesTable() {
-    return new Promise((resolve, reject) => {
-      const createFavoritesTable = `
-        CREATE TABLE IF NOT EXISTS favorites (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          event_id INTEGER NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-          FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE,
-          UNIQUE(user_id, event_id)
-        )
-      `;
-
-      this.db.run(createFavoritesTable, (err) => {
-        if (err) {
-          console.error(' Erreur création table favorites:', err.message);
-          reject(err);
-        } else {
-          console.log(' Table favorites créée/vérifiée');
-          resolve();
-        }
-      });
-    });
-  }
-
- 
-  getDb() {
+  // Obtenir l'instance de la base de données
+  getDB() {
+    if (!this.db) {
+      throw new Error('Base de données non initialisée. Appelez d\'abord init()');
+    }
     return this.db;
   }
 
- 
+  // Obtenir le statut d'initialisation
+  isReady() {
+    return this.isInitialized && this.db !== null;
+  }
+
+  // Fermer la connexion
   close() {
     return new Promise((resolve) => {
       if (this.db) {
         this.db.close((err) => {
           if (err) {
-            console.error(' Erreur fermeture SQLite:', err.message);
+            console.error('Erreur fermeture base de données:', err.message);
           } else {
-            console.log(' Connexion SQLite fermée');
+            console.log(' Connexion base de données fermée');
           }
+          this.isInitialized = false;
           resolve();
         });
       } else {
@@ -155,9 +72,76 @@ class Database {
       }
     });
   }
+
+  
+
+  // Exécuter une requête SQL
+  run(sql, params = []) {
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, params, function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ lastID: this.lastID, changes: this.changes });
+        }
+      });
+    });
+  }
+
+  // Récupérer une seule ligne
+  get(sql, params = []) {
+    return new Promise((resolve, reject) => {
+      this.db.get(sql, params, (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      });
+    });
+  }
+
+  // Récupérer plusieurs lignes
+  all(sql, params = []) {
+    return new Promise((resolve, reject) => {
+      this.db.all(sql, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
+  
+
+  // Obtenir le nombre d'utilisateurs
+  async getUserCount() {
+    const result = await this.get('SELECT COUNT(*) as count FROM users');
+    return result.count;
+  }
+
+  // Obtenir le nombre de favoris
+  async getFavoriteCount() {
+    const result = await this.get('SELECT COUNT(*) as count FROM favorites');
+    return result.count;
+  }
+
+  // Obtenir les statistiques de la base
+  async getStats() {
+    const userCount = await this.getUserCount();
+    const favoriteCount = await this.getFavoriteCount();
+    
+    return {
+      users: userCount,
+      favorites: favoriteCount,
+      lastUpdate: new Date().toISOString()
+    };
+  }
 }
 
-
+// Créer une instance singleton
 const database = new Database();
 
 module.exports = database; 
