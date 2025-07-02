@@ -3,7 +3,7 @@ const db = require('../config/database');
 class Favorite {
   // Ajouter un événement aux favoris
   static async add(user_id, event_id) {
-    console.log(' Ajout favori:', { user_id, event_id });
+    console.log('Ajout favori:', { user_id, event_id });
 
     const sql = 'INSERT INTO favorites (user_id, event_id) VALUES (?, ?)';
 
@@ -13,7 +13,7 @@ class Favorite {
           if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             reject(new Error('Événement déjà en favoris'));
           } else {
-            console.error(' Erreur ajout favori:', err);
+            console.error('Erreur ajout favori:', err);
             reject(err);
           }
         } else {
@@ -38,37 +38,31 @@ class Favorite {
     return new Promise((resolve, reject) => {
       db.run(sql, [user_id, event_id], function(err) {
         if (err) {
-          console.error(' Erreur suppression favori:', err);
+          console.error('Erreur suppression favori:', err);
           reject(err);
         } else if (this.changes === 0) {
           reject(new Error('Favori non trouvé'));
         } else {
-          console.log(' Favori supprimé');
+          console.log('Favori supprimé');
           resolve({ success: true });
         }
       });
     });
   }
 
-  // Récupérer tous les favoris d'un utilisateur
-  static async findByUserId(user_id) {
-    const sql = `
-      SELECT f.*, e.titre, e.lieu, e.date, e.prix, e.categorie, 
-             e.latitude, e.longitude, e.description, e.image, e.source
-      FROM favorites f
-      INNER JOIN events e ON f.event_id = e.id
-      WHERE f.user_id = ?
-      ORDER BY f.created_at DESC
-    `;
+  // Récupérer les IDs des favoris d'un utilisateur
+  static async getFavoriteIds(user_id) {
+    const sql = 'SELECT event_id FROM favorites WHERE user_id = ? ORDER BY created_at DESC';
 
     return new Promise((resolve, reject) => {
       db.all(sql, [user_id], (err, rows) => {
         if (err) {
-          console.error(' Erreur récupération favoris:', err);
+          console.error('Erreur récupération IDs favoris:', err);
           reject(err);
         } else {
-          console.log(` ${rows.length} favoris récupérés pour utilisateur ${user_id}`);
-          resolve(rows || []);
+          const favoriteIds = rows.map(row => row.event_id);
+          console.log(`${favoriteIds.length} favoris récupérés pour utilisateur ${user_id}`);
+          resolve(favoriteIds);
         }
       });
     });
@@ -81,27 +75,10 @@ class Favorite {
     return new Promise((resolve, reject) => {
       db.get(sql, [user_id, event_id], (err, row) => {
         if (err) {
-          console.error(' Erreur vérification favori:', err);
+          console.error('Erreur vérification favori:', err);
           reject(err);
         } else {
           resolve(!!row);
-        }
-      });
-    });
-  }
-
-  // Récupérer les IDs des favoris d'un utilisateur
-  static async getFavoriteIds(user_id) {
-    const sql = 'SELECT event_id FROM favorites WHERE user_id = ?';
-
-    return new Promise((resolve, reject) => {
-      db.all(sql, [user_id], (err, rows) => {
-        if (err) {
-          console.error(' Erreur récupération IDs favoris:', err);
-          reject(err);
-        } else {
-          const favoriteIds = rows.map(row => row.event_id);
-          resolve(favoriteIds);
         }
       });
     });
@@ -114,7 +91,7 @@ class Favorite {
     return new Promise((resolve, reject) => {
       db.get(sql, [user_id], (err, row) => {
         if (err) {
-          console.error(' Erreur comptage favoris:', err);
+          console.error('Erreur comptage favoris:', err);
           reject(err);
         } else {
           resolve(row.count || 0);
@@ -130,10 +107,10 @@ class Favorite {
     return new Promise((resolve, reject) => {
       db.run(sql, [user_id], function(err) {
         if (err) {
-          console.error(' Erreur suppression tous favoris:', err);
+          console.error('Erreur suppression tous favoris:', err);
           reject(err);
         } else {
-          console.log(` ${this.changes} favoris supprimés pour utilisateur ${user_id}`);
+          console.log(`${this.changes} favoris supprimés pour utilisateur ${user_id}`);
           resolve({ deleted: this.changes });
         }
       });

@@ -18,9 +18,9 @@ class User {
       const saltRounds = 10; // Valeur plus simple et plus rapide
       console.log('Hachage du mot de passe...');
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      console.log(' Mot de passe haché');
+              console.log('Mot de passe haché');
 
-      const db = database.getDb();
+      const db = database.getDB();
       
       return new Promise((resolve, reject) => {
         const sql = `
@@ -28,22 +28,22 @@ class User {
           VALUES (?, ?, ?)
         `;
 
-        console.log(' Insertion en base...', { email, name });
+        console.log('Insertion en base...', { email, name });
         
         db.run(sql, [email, hashedPassword, name], function(err) {
           if (err) {
-            console.error(' Erreur insertion:', err);
+            console.error('Erreur insertion:', err);
             if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
               reject(new Error('Un compte avec cet email existe déjà'));
             } else {
               reject(err);
             }
           } else {
-            console.log(' Utilisateur inséré, ID:', this.lastID);
+            console.log('Utilisateur inséré, ID:', this.lastID);
             // Récupérer l'utilisateur créé
             User.findById(this.lastID)
               .then(user => {
-                console.log(' Utilisateur récupéré:', user.email);
+                console.log('Utilisateur récupéré:', user.email);
                 resolve(user);
               })
               .catch(reject);
@@ -51,7 +51,7 @@ class User {
         });
       });
     } catch (error) {
-      console.error(' Erreur création utilisateur:', error);
+      console.error('Erreur création utilisateur:', error);
       throw error;
     }
   }
@@ -59,7 +59,7 @@ class User {
   // Trouver un utilisateur par ID
   static async findById(id) {
     return new Promise((resolve, reject) => {
-      const db = database.getDb();
+      const db = database.getDB();
       const sql = 'SELECT * FROM users WHERE id = ?';
 
       db.get(sql, [id], (err, row) => {
@@ -77,7 +77,7 @@ class User {
   // Trouver un utilisateur par email
   static async findByEmail(email) {
     return new Promise((resolve, reject) => {
-      const db = database.getDb();
+      const db = database.getDB();
       const sql = 'SELECT * FROM users WHERE email = ?';
 
       db.get(sql, [email], (err, row) => {
@@ -97,7 +97,7 @@ class User {
     try {
       return await bcrypt.compare(candidatePassword, this.password);
     } catch (error) {
-      console.error(' Erreur comparaison mot de passe:', error);
+      console.error('Erreur comparaison mot de passe:', error);
       return false;
     }
   }
@@ -105,7 +105,7 @@ class User {
   // Mettre à jour un utilisateur
   static async update(userId, updateData) {
     try {
-      const db = database.getDb();
+      const db = database.getDB();
       
       // Construire la requête SQL dynamiquement selon les champs à mettre à jour
       const fields = [];
@@ -134,7 +134,7 @@ class User {
       return new Promise((resolve, reject) => {
         db.run(sql, values, function(err) {
           if (err) {
-            console.error(' Erreur mise à jour:', err);
+            console.error('Erreur mise à jour:', err);
             if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
               reject(new Error('Un compte avec cet email existe déjà'));
             } else {
@@ -143,11 +143,11 @@ class User {
           } else if (this.changes === 0) {
             resolve(null); // Aucun utilisateur trouvé
           } else {
-            console.log(' Utilisateur mis à jour, ID:', userId);
+            console.log('Utilisateur mis à jour, ID:', userId);
             // Récupérer l'utilisateur mis à jour
             User.findById(userId)
               .then(user => {
-                console.log(' Utilisateur récupéré après mise à jour:', user.email);
+                console.log('Utilisateur récupéré après mise à jour:', user.email);
                 resolve(user);
               })
               .catch(reject);
@@ -155,7 +155,7 @@ class User {
         });
       });
     } catch (error) {
-      console.error(' Erreur update utilisateur:', error);
+      console.error('Erreur update utilisateur:', error);
       throw error;
     }
   }
@@ -170,26 +170,26 @@ class User {
   // Supprimer un utilisateur
   static async delete(userId) {
     try {
-      const db = database.getDb();
+      const db = database.getDB();
       
       return new Promise((resolve, reject) => {
         const sql = 'DELETE FROM users WHERE id = ?';
 
         db.run(sql, [userId], function(err) {
           if (err) {
-            console.error(' Erreur suppression utilisateur:', err);
+            console.error('Erreur suppression utilisateur:', err);
             reject(err);
           } else if (this.changes === 0) {
-            console.log(' Aucun utilisateur trouvé avec l\'ID:', userId);
+            console.log('Aucun utilisateur trouvé avec l\'ID:', userId);
             resolve(false); // Aucun utilisateur trouvé
           } else {
-            console.log(' Utilisateur supprimé avec succès, ID:', userId);
+            console.log('Utilisateur supprimé avec succès, ID:', userId);
             resolve(true); // Suppression réussie
           }
         });
       });
     } catch (error) {
-      console.error(' Erreur delete utilisateur:', error);
+      console.error('Erreur delete utilisateur:', error);
       throw error;
     }
   }
@@ -197,7 +197,7 @@ class User {
   // Obtenir tous les utilisateurs (pour debug)
   static async findAll() {
     return new Promise((resolve, reject) => {
-      const db = database.getDb();
+      const db = database.getDB();
       const sql = 'SELECT * FROM users ORDER BY created_at DESC';
 
       db.all(sql, [], (err, rows) => {
